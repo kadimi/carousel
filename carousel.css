@@ -1,0 +1,31 @@
+.carousel {
+	width: 100%;
+	position: relative;
+	overflow: hidden;
+}
+.carousel > ul {
+	overflow: hidden;
+	padding: 0;
+	position: relative;
+}
+.carousel > ul > li {
+	display: block;
+	list-style: none;
+	position: absolute;
+}
+.carousel > .carousel_arrow {
+	background: none;
+	border-style: solid;
+	cursor: pointer;
+	height: 0;
+	opacity: .1;
+	overflow: hidden;
+	position: absolute;
+ 	transition: all .5s ease;
+	width: 0;
+	z-index: 100;
+	border-color: transparent black;
+}
+.carousel > .carousel_arrow:hover {
+	opacity: .2;
+}
