@@ -21,7 +21,7 @@
 	opacity: .1;
 	overflow: hidden;
 	position: absolute;
- 	transition: all .5s ease;
+ 	transition: opacity .5s ease;
 	width: 0;
 	z-index: 100;
 	border-color: transparent black;
