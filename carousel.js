@@ -62,7 +62,7 @@
 
                 autoplay = function () {
                     var list_closure = list;
-                    list_closure.carousel('goto', 'next');
+                    list_closure.carousel('go', 'next');
                 };
 
                 // Make options available to list
@@ -172,9 +172,9 @@
                     }
                     if (time - list.o.mousewheelTime > 50) {
                         if (delta < 0) {
-                            list.carousel('goto', 'next');
+                            list.carousel('go', 'next');
                         } else if (delta > 0) {
-                            list.carousel('goto', 'previous');
+                            list.carousel('go', 'previous');
                         }
                     }
                     list.o.mousewheelTime = (new Date()).getTime();
@@ -212,13 +212,13 @@
                         }
                         // Resave timers
                         /* No need, already saved */
-                        // goto(?)
+                        // go(?)
                         if (e.type === 'click') {
-                            list.carousel('goto', button, e);
+                            list.carousel('go', button, e);
                         } else if (e.type === 'dblclick' && button === 'previous') {
-                            list.carousel('goto', 'first', e);
+                            list.carousel('go', 'first', e);
                         } else if (e.type === 'dblclick' && button === 'next') {
-                            list.carousel('goto', 'last', e);
+                            list.carousel('go', 'last', e);
                         }
                     });
 
@@ -230,7 +230,7 @@
             });
         }, /* init */
         // Go to 'slide' by index, also accepts string 'next' and 'previous'
-        goto : function (target_index, e) {
+        go : function (target_index, e) {
             var anim, button = false, list = this;
             // Which arrow button was clicked (previous, next, false)
             if (e !== undefined) {
@@ -304,7 +304,7 @@
                 });
             }
             return this;
-        } /* goto */
+        } /* go */
     }; /* methods */
 
     // Plugin
