@@ -48,7 +48,7 @@
                 } else if (obj.find('ul:first').length) {
                     list = obj.find('ul:first');
                 } else {
-                    window.console.log('jQuery.Carousel: Nothing to do');
+                    window.console.log('jQuery.carousel: Nothing to do');
                     return;
                 }
 
@@ -56,7 +56,7 @@
 
                 // Do nothing if carousel is previously marked
                 if (list.data('carousel') !== undefined) {
-                    window.console.log('jQuery.Carousel: Nothing to do');
+                    window.console.log('jQuery.carousel: Nothing to do');
                     return;
                 }
 
