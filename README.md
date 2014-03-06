@@ -6,6 +6,6 @@ Carousel is a jQuery plugin for turning HTML unordered lists `<ul>` into carouse
 
 ## Basic example
 
-```
+```javascript
 $('#my_ul').carousel();
 ```
