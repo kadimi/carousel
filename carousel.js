@@ -8,7 +8,7 @@
 
     // Default options
     $.carousel.defaults = {
-        arrows_position: 50,       // in %
+        arrows_position: 50,        // in %
         arrows_height: 60,          // in px
         arrows_width: 25,           // in px
         cycle: false,
@@ -23,7 +23,7 @@
         margin_h: 2,                // in %
         pause: 0,                   // in ms
         rules: {
-            "minWidth=640&maxWidth=1024" : {
+            "minWidth=640&maxWidth=1023": {
                 elements_visible: 2
             }
         },
@@ -332,7 +332,6 @@ Array.prototype.shuffle = function () {
         this[top] = tmp;
     }
 };
-
 
 // jQuery Mousewheel
 (function(a){"function"==typeof define&&define.amd?define(["jquery"],a):"object"==typeof exports?module.exports=a:a(jQuery)})(function(a){function g(b){var l,c=b||window.event,f=[].slice.call(arguments,1),g=0,h=0,i=0,j=0,k=0;return b=a.event.fix(c),b.type="mousewheel",c.wheelDelta&&(g=c.wheelDelta),c.detail&&(g=-1*c.detail),c.deltaY&&(i=-1*c.deltaY,g=i),c.deltaX&&(h=c.deltaX,g=-1*h),void 0!==c.wheelDeltaY&&(i=c.wheelDeltaY),void 0!==c.wheelDeltaX&&(h=-1*c.wheelDeltaX),j=Math.abs(g),(!d||d>j)&&(d=j),k=Math.max(Math.abs(i),Math.abs(h)),(!e||e>k)&&(e=k),l=g>0?"floor":"ceil",g=Math[l](g/d),h=Math[l](h/e),i=Math[l](i/e),f.unshift(b,g,h,i),(a.event.dispatch||a.event.handle).apply(this,f)}var d,e,b=["wheel","mousewheel","DOMMouseScroll","MozMousePixelScroll"],c="onwheel"in document||document.documentMode>=9?["wheel"]:["mousewheel","DomMouseScroll","MozMousePixelScroll"];if(a.event.fixHooks)for(var f=b.length;f;)a.event.fixHooks[b[--f]]=a.event.mouseHooks;a.event.special.mousewheel={setup:function(){if(this.addEventListener)for(var a=c.length;a;)this.addEventListener(c[--a],g,!1);else this.onmousewheel=g},teardown:function(){if(this.removeEventListener)for(var a=c.length;a;)this.removeEventListener(c[--a],g,!1);else this.onmousewheel=null}},a.fn.extend({mousewheel:function(a){return a?this.bind("mousewheel",a):this.trigger("mousewheel")},unmousewheel:function(a){return this.unbind("mousewheel",a)}})});
