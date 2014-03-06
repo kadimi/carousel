@@ -8,25 +8,27 @@
 
     // Default options
     $.carousel.defaults = {
-        arrows_position: 50,        // in px
-        arrows_height: 80,          // in px
-        arrows_width: 20,           // in px
+        arrows_position: 50,       // in %
+        arrows_height: 60,          // in px
+        arrows_width: 25,           // in px
         cycle: false,
         dblclick: true,
+        direction: 'rtl',           // 'ltr' or 'rtl', uses the element direction if null
         elements_margin_h: 0.5,     // in %
         elements_padding_h: 0,      // in %
         elements_padding_v: 5,      // in %
         elements_visible: 4,
-        height: 200,                // in px or 'dynamic'
-        interval: 2500,            // in ms, 0 for no automatic action
+        height: 250,                // in px or 'dynamic'
+        interval: 0,                // in ms; 0 for no automatic action
         margin_h: 2,                // in %
+        pause: 0,                   // in ms
         rules: {
-            "min-width=640px&max-width=1024" : {
+            "minWidth=640&maxWidth=1024" : {
                 elements_visible: 2
             }
         },
         shuffle: false,             // shuffle on init
-        speed: 250,                 // in ms or fast (=200) or slow (=600)
+        speed: 300,                 // in ms or fast (=200) or slow (=600)
         steps: null,                // elements_visible if null
         dummy: "Dummy"              // Dummy
     };
@@ -38,7 +40,7 @@
             return this.each(function () {
 
                 // Variables (to be continued...)
-                var i, indexes = [], list, o = options, obj = $(this);
+                var autoplay, i, indexes = [], list, o = options, obj = $(this);
 
                 // Check object is ul, if not get the first ul from its children
                 if (obj.is('ul')) {
@@ -58,6 +60,10 @@
                     return;
                 }
 
+                autoplay = function () {
+                    var list_closure = list;
+                    list_closure.carousel('goto', 'next');
+                };
 
                 // Make options available to list
                 list.o = o;
@@ -65,7 +71,7 @@
                 // Variables (...continued)
                 o.base_width = 100 / o.elements_visible;
                 o.carousel_element_width = o.base_width - (2 * o.elements_margin_h);
-                o.text_direction = list.css('direction');
+                o.text_direction = (o.direction === 'ltr' || o.direction === 'rtl') ? o.direction : list.css('direction');
                 o.ltr = o.text_direction === 'ltr';
                 o.rtl = o.text_direction !== 'ltr';
                 o.start = o.ltr ? 'left' : 'right';
@@ -133,7 +139,7 @@
 
                 // Style wrapper
                 list.wrapper
-                    .css('direction', list.css('direction'));
+                    .css('direction', list.o.direction);
 
                 // Style arrows
                 list.wrapper.find('> .carousel_arrow')
@@ -158,34 +164,69 @@
                     .css('border-' + o.start + 'color', 'transparent')
                     .css(o.end, '0');
 
-                // Setup arrow click
-                $('> .carousel_arrow_next', list.wrapper)
-                    .click(function (e) {
-                        list.carousel('goto', 'next', e);
-                    })
-                    .dblclick(function () {
-                        if (list.o.dblclick) {
-                            list.carousel('goto', list.o.length - list.o.elements_visible);
+                // Attach mousewheel event handler to list
+                list.mousewheel(function (e, delta) {
+                    var time = (new Date()).getTime();
+                    if (list.o.mousewheelTime === undefined) {
+                        list.o.mousewheelTime = 0;
+                    }
+                    if (time - list.o.mousewheelTime > 50) {
+                        if (delta < 0) {
+                            list.carousel('goto', 'next');
+                        } else if (delta > 0) {
+                            list.carousel('goto', 'previous');
                         }
-                    });
-                $('> .carousel_arrow_previous', list.wrapper)
-                    .click(function (e) {
-                        list.carousel('goto', 'previous', e);
-                        // list.carousel('goto', list.o.index - list.o.steps);
-                    })
-                    .dblclick(function () {
-                        if (list.o.dblclick) {
-                            list.carousel('goto', 0);
+                    }
+                    list.o.mousewheelTime = (new Date()).getTime();
+                    e.preventDefault();
+                });
+
+                // Attach click/dblclick event handlers to arrows
+                $('> .carousel_arrow', list.wrapper)
+                    .bind('click dblclick', function (e) {
+                        var button = false;
+                        if ($(e.target).hasClass('carousel_arrow_next')) {
+                            button = 'next';
+                        } else if ($(e.target).hasClass('carousel_arrow_previous')) {
+                            button = 'previous';
+                        }
+                        // Clear timers
+                        if (list.o.intervalID !== 'undefined') {
+                            clearInterval(list.o.intervalID);
+                        }
+                        if (list.o.timeoutID !== 'undefined') {
+                            clearTimeout(list.o.timeoutID);
+                        }
+                        // Then start autoplay
+                        if (list.o.interval) {
+                            if (list.o.pause) {
+                                list.o.timeoutID = window.setTimeout(
+                                    function () {
+                                        list.o.intervalID = window.setInterval(autoplay, list.o.interval);
+                                    },
+                                    list.o.pause
+                                );
+                            } else {
+                                list.o.intervalID = window.setInterval(autoplay, list.o.interval);
+                            }
+                        }
+                        // Resave timers
+                        /* No need, already saved */
+                        // goto(?)
+                        if (e.type === 'click') {
+                            list.carousel('goto', button, e);
+                        } else if (e.type === 'dblclick' && button === 'previous') {
+                            list.carousel('goto', 'first', e);
+                        } else if (e.type === 'dblclick' && button === 'next') {
+                            list.carousel('goto', 'last', e);
                         }
                     });
 
-                // Click the next arrow 
+                // Start autoplay
                 if (list.o.interval) {
-                    window.setInterval(function () {
-                        var list_closure = list;
-                        list_closure.carousel('goto', 'next');
-                    }, o.interval);
+                    list.o.intervalID = window.setInterval(autoplay, o.interval);
                 }
+
             });
         }, /* init */
         // Go to 'slide' by index, also accepts string 'next' and 'previous'
@@ -215,6 +256,14 @@
                         ) {
                     target_index = 0;
                 }
+            }
+            // 'first' to index
+            if (target_index === 'first') {
+                target_index = 0;
+            }
+            // 'last' to index
+            if (target_index === 'last') {
+                target_index = list.o.length - list.o.elements_visible;
             }
             if (target_index < 0 || (target_index === list.o.index && button === 'previous')) {
                 // index is too small
@@ -283,3 +332,7 @@ Array.prototype.shuffle = function () {
         this[top] = tmp;
     }
 };
+
+
+// jQuery Mousewheel
+(function(a){"function"==typeof define&&define.amd?define(["jquery"],a):"object"==typeof exports?module.exports=a:a(jQuery)})(function(a){function g(b){var l,c=b||window.event,f=[].slice.call(arguments,1),g=0,h=0,i=0,j=0,k=0;return b=a.event.fix(c),b.type="mousewheel",c.wheelDelta&&(g=c.wheelDelta),c.detail&&(g=-1*c.detail),c.deltaY&&(i=-1*c.deltaY,g=i),c.deltaX&&(h=c.deltaX,g=-1*h),void 0!==c.wheelDeltaY&&(i=c.wheelDeltaY),void 0!==c.wheelDeltaX&&(h=-1*c.wheelDeltaX),j=Math.abs(g),(!d||d>j)&&(d=j),k=Math.max(Math.abs(i),Math.abs(h)),(!e||e>k)&&(e=k),l=g>0?"floor":"ceil",g=Math[l](g/d),h=Math[l](h/e),i=Math[l](i/e),f.unshift(b,g,h,i),(a.event.dispatch||a.event.handle).apply(this,f)}var d,e,b=["wheel","mousewheel","DOMMouseScroll","MozMousePixelScroll"],c="onwheel"in document||document.documentMode>=9?["wheel"]:["mousewheel","DomMouseScroll","MozMousePixelScroll"];if(a.event.fixHooks)for(var f=b.length;f;)a.event.fixHooks[b[--f]]=a.event.mouseHooks;a.event.special.mousewheel={setup:function(){if(this.addEventListener)for(var a=c.length;a;)this.addEventListener(c[--a],g,!1);else this.onmousewheel=g},teardown:function(){if(this.removeEventListener)for(var a=c.length;a;)this.removeEventListener(c[--a],g,!1);else this.onmousewheel=null}},a.fn.extend({mousewheel:function(a){return a?this.bind("mousewheel",a):this.trigger("mousewheel")},unmousewheel:function(a){return this.unbind("mousewheel",a)}})});
