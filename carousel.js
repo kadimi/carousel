@@ -23,13 +23,19 @@
         margin_h: 2,                // in %
         pause: 0,                   // in ms
         rules: {
-            "minWidth=640&maxWidth=1023": {
+            "maxWidth=480": {
                 elements_visible: 2
+            },
+            "minWidth=481&maxWidth=1000": {
+                elements_visible: 3
+            },
+            "minWidth=1001": {
+                elements_visible: 4
             }
         },
         shuffle: false,             // shuffle on init
         speed: 300,                 // in ms or fast (=200) or slow (=600)
-        steps: null,                // elements_visible if null
+        steps: null,                   // elements_visible if null
         dummy: "Dummy"              // Dummy
     };
 
@@ -40,7 +46,7 @@
             return this.each(function () {
 
                 // Variables (to be continued...)
-                var autoplay, i, indexes = [], list, o = options, obj = $(this);
+                var autoplay, i, indexes = [], list, match, o = options, obj = $(this), timeouts = [];
 
                 // Check object is ul, if not get the first ul from its children
                 if (obj.is('ul')) {
@@ -48,15 +54,15 @@
                 } else if (obj.find('ul:first').length) {
                     list = obj.find('ul:first');
                 } else {
-                    window.console.log('jQuery.carousel: Nothing to do');
+                    window.console.warn('jQuery.carousel: Element is not an unordered list');
                     return;
                 }
 
                 o = $.extend({}, $.carousel.defaults, o);
 
                 // Do nothing if carousel is previously marked
-                if (list.data('carousel') !== undefined) {
-                    window.console.log('jQuery.carousel: Nothing to do');
+                if ( list.data('carousel') !== undefined ) {
+                    window.console.info('jQuery.carousel: Already created');
                     return;
                 }
 
@@ -86,7 +92,7 @@
                 }
 
                 // A random wrapper_id of carousel_{0 to 99} is given if not present in parameters
-                if (o.wrapper_id === undefined) {
+                if ( o.wrapper_id === undefined ) {
                     o.wrapper_id = 'carousel_' + (Math.floor(99 * Math.random()) + 1);
                 }
 
@@ -167,7 +173,7 @@
                 // Attach mousewheel event handler to list
                 list.mousewheel(function (e, delta) {
                     var time = (new Date()).getTime();
-                    if (list.o.mousewheelTime === undefined) {
+                    if ( list.o.mousewheelTime === undefined ) {
                         list.o.mousewheelTime = 0;
                     }
                     if (time - list.o.mousewheelTime > 50) {
@@ -222,6 +228,51 @@
                         }
                     });
 
+                // Attach delayed resize event handler
+                window.onresize = function(){
+                    clearTimeout(timeouts['resize']);
+                    timeouts['resize'] = setTimeout(onresizeHandler, 10);
+                };
+
+                // The onresize handler 
+                function onresizeHandler(){
+                    var w = $(window).width();
+                    var h = $(window).height();
+                    
+                    /**
+                     * Example: 
+                     *  $0 => maxwidth=1023
+                     *  $1 => maxwidth
+                     *  $2 => 1023
+                     */
+                    var subRuleRegex = /\b((?:min|max)(?:width|height))=(\d+)\b/g;
+
+                    ruleLoop:
+                    for ( var rule in o.rules ) {
+                        // Forget last match index
+                        subRuleRegex.lastIndex = 0;
+                        
+                        // Check all subrules and skip whenever the subrule is not met
+                        while ( match = subRuleRegex.exec(rule.toLowerCase()) ) {
+                            if (
+                                ( match[1] === 'minwidth' && w < match[2] )
+                                ||
+                                ( match[1] === 'maxwidth' && w > match[2] )
+                                ||
+                                ( match[1] === 'minheight' && w < match[2] )
+                                ||
+                                ( match[1] === 'maxheight' && w > match[2] )
+                            ) {
+                                continue ruleLoop;
+                            }
+                        }
+                        // Being here means that all subrules were let, so let's re-init the carousel with the new options
+                        list.carousel('reset', $.extend({}, o, list.o.rules[rule]));
+                        // list.carousel('reset', list.o.rules[rule] );
+
+                    }
+                }
+
                 // Start autoplay
                 if (list.o.interval) {
                     list.o.intervalID = window.setInterval(autoplay, o.interval);
@@ -229,11 +280,19 @@
 
             });
         }, /* init */
+        reset: function (options) {
+            var list = this;
+            // Unmark carousel
+            list.removeData("carousel");
+            list.unwrap();
+            // re-init
+            list.carousel('init', options);
+        }, /* reset */
         // Go to 'slide' by index, also accepts string 'next' and 'previous'
-        go : function (target_index, e) {
+        go: function (target_index, e) {
             var anim, button = false, list = this;
             // Which arrow button was clicked (previous, next, false)
-            if (e !== undefined) {
+            if ( e !== undefined ) {
                 if ($(e.target).hasClass('carousel_arrow_next')) {
                     button = 'next';
                 } else if ($(e.target).hasClass('carousel_arrow_previous')) {
