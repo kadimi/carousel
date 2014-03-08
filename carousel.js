@@ -35,7 +35,7 @@
         },
         shuffle: false,             // shuffle on init
         speed: 300,                 // in ms or fast (=200) or slow (=600)
-        steps: null,                   // elements_visible if null
+        steps: null,                // elements_visible if null
         dummy: "Dummy"              // Dummy
     };
 
@@ -259,9 +259,9 @@
                                 ||
                                 ( match[1] === 'maxwidth' && w > match[2] )
                                 ||
-                                ( match[1] === 'minheight' && w < match[2] )
+                                ( match[1] === 'minheight' && h < match[2] )
                                 ||
-                                ( match[1] === 'maxheight' && w > match[2] )
+                                ( match[1] === 'maxheight' && h > match[2] )
                             ) {
                                 continue ruleLoop;
                             }
